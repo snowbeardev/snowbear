@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@snowbear/core": "workspace:*",
     "@snowbear/cli": "workspace:*",
+    "@snowbear/core": "workspace:*",
     "@snowbear/slack-adapter": "workspace:*"
   }
 }

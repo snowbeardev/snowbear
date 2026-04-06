@@ -3,6 +3,7 @@ import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { config as loadDotenv } from 'dotenv';
 
 const thisDir = dirname(fileURLToPath(import.meta.url));
 
@@ -37,6 +38,16 @@ export const devCommand = new Command('dev')
     if (!existsSync(configPath)) {
       console.error(`Config file not found: ${configPath}`);
       process.exit(1);
+    }
+
+    // Load .env from the config file's directory, falling back to cwd
+    const configDir = dirname(configPath);
+    const envPath = resolve(configDir, '.env');
+    if (existsSync(envPath)) {
+      loadDotenv({ path: envPath });
+      console.log(`\x1b[33m[env]\x1b[0m Loaded ${envPath}`);
+    } else {
+      loadDotenv();
     }
 
     const children: ChildProcess[] = [];

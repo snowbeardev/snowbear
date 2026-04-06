@@ -5,18 +5,22 @@ A general-purpose CEO agent that triages requests and delegates work via the tas
 ## Setup
 
 1. Create a Slack app with Socket Mode enabled
-2. Set environment variables:
+2. Copy `.env.example` and fill in your credentials:
 
 ```bash
-export SLACK_BOT_TOKEN=xoxb-...
-export SLACK_APP_TOKEN=xapp-...
-export OPENAI_API_KEY=sk-...
+cp .env.example .env
 ```
 
-3. Run the agent:
+```
+SLACK_BOT_TOKEN=xoxb-...
+SLACK_APP_TOKEN=xapp-...
+OPENAI_API_KEY=sk-...
+```
+
+3. Run the agent (from the repo root):
 
 ```bash
-npx snowbear start
+pnpm dev -c examples/ceo-agent/snowbear.config.ts
 ```
 
 ## What it does
