@@ -20,6 +20,7 @@ examples/
 
 ```bash
 pnpm install          # Install all dependencies
+pnpm dev              # Start API + bot + dashboard in dev mode (one command)
 pnpm build            # Build all packages (tsc -b via each package)
 pnpm test             # Run tests (vitest)
 pnpm typecheck        # Type-check all packages

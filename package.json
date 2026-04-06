@@ -7,6 +7,7 @@
   },
   "packageManager": "pnpm@9.15.4",
   "scripts": {
+    "dev": "tsx packages/cli/src/main.ts dev",
     "build": "pnpm -r build",
     "test": "vitest run",
     "lint": "eslint .",
