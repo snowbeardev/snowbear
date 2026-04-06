@@ -2,18 +2,29 @@
 
 Self-learning AI agents for communication channels like Slack.
 
-Snowbear lets developers run a server and create AI agents that learn and improve over time through interactions in messaging platforms.
+## Packages
 
-## Features
-
-- Run a lightweight server for hosting AI agents
-- Connect agents to Slack and other communication channels
-- Self-learning: agents improve through conversation context
-- Simple developer API for creating and configuring agents
+| Package | Description |
+|---------|-------------|
+| `@snowbear/core` | Core runtime — agent lifecycle, event bus, tool system |
+| `@snowbear/cli` | CLI for running and managing snowbear agents |
+| `@snowbear/slack-adapter` | Slack channel adapter |
 
 ## Getting Started
 
-Coming soon.
+```bash
+pnpm install
+pnpm build
+pnpm test
+```
+
+## Development
+
+- **Build:** `pnpm build`
+- **Test:** `pnpm test`
+- **Lint:** `pnpm lint`
+- **Format:** `pnpm format`
+- **Typecheck:** `pnpm typecheck`
 
 ## License
 

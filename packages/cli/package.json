@@ -1,0 +1,16 @@
+{
+  "name": "@snowbear/cli",
+  "version": "0.0.1",
+  "type": "module",
+  "bin": {
+    "snowbear": "./dist/main.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch"
+  },
+  "dependencies": {
+    "@snowbear/core": "workspace:*"
+  }
+}
