@@ -1,0 +1,10 @@
+{
+  "name": "@snowbear/example-ceo-agent",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@snowbear/core": "workspace:*",
+    "@snowbear/cli": "workspace:*",
+    "@snowbear/slack-adapter": "workspace:*"
+  }
+}

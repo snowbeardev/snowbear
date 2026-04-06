@@ -24,6 +24,18 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.17)
 
+  examples/ceo-agent:
+    dependencies:
+      '@snowbear/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@snowbear/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@snowbear/slack-adapter':
+        specifier: workspace:*
+        version: link:../../packages/slack-adapter
+
   packages/cli:
     dependencies:
       '@snowbear/core':
