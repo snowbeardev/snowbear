@@ -38,7 +38,7 @@ pnpm format:check     # Prettier (check only)
 - **Test:** Vitest — test files colocated as `*.test.ts` in `src/`
 - **Server:** Fastify with `@fastify/websocket` and `@fastify/static`
 - **Dashboard:** React 19, React Router, TanStack Query, Tailwind CSS, Vite
-- **LLM:** OpenAI and Anthropic providers (see `packages/core/src/llm.ts`)
+- **LLM:** Anthropic (default) and OpenAI providers (see `packages/core/src/llm.ts`)
 - **Slack:** `@slack/bolt`
 - **CI:** GitHub Actions on Node 20 + 22
 
@@ -68,8 +68,8 @@ The CLI loads config with `loadConfig()` from `@snowbear/core`.
 
 ## Environment Variables
 
+- `ANTHROPIC_API_KEY` — for Anthropic LLM provider (default)
 - `OPENAI_API_KEY` — for OpenAI LLM provider
-- `ANTHROPIC_API_KEY` — for Anthropic LLM provider
 - `SLACK_BOT_TOKEN` — Slack bot token
 - `SLACK_APP_TOKEN` — Slack app-level token (socket mode)
 

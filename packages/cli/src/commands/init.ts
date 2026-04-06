@@ -13,8 +13,8 @@ const config: ServerConfig = {
       adapter: 'slack',
       systemPrompt: 'You are a helpful assistant.',
       llm: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'anthropic',
+        model: 'claude-sonnet-4-6',
       },
     },
   ],

@@ -17,8 +17,8 @@ const config: ServerConfig = {
         'Be concise, helpful, and action-oriented.',
       ].join('\n'),
       llm: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'anthropic',
+        model: 'claude-sonnet-4-6',
       },
     },
   ],
