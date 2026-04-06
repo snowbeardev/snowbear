@@ -176,9 +176,9 @@ describe('TaskQueue', () => {
   it('full lifecycle: pending → running → done', async () => {
     const bus = new EventBus();
     const events: string[] = [];
-    bus.on('task:created', () => events.push('created'));
-    bus.on('task:started', () => events.push('started'));
-    bus.on('task:completed', () => events.push('completed'));
+    bus.on('task:created', () => { events.push('created'); });
+    bus.on('task:started', () => { events.push('started'); });
+    bus.on('task:completed', () => { events.push('completed'); });
 
     const queue = new TaskQueue(bus);
     const task = await queue.enqueue({ source: makeSource(), description: 'E2E' });
@@ -196,9 +196,9 @@ describe('TaskQueue', () => {
   it('full lifecycle: pending → running → failed', async () => {
     const bus = new EventBus();
     const events: string[] = [];
-    bus.on('task:created', () => events.push('created'));
-    bus.on('task:started', () => events.push('started'));
-    bus.on('task:failed', () => events.push('failed'));
+    bus.on('task:created', () => { events.push('created'); });
+    bus.on('task:started', () => { events.push('started'); });
+    bus.on('task:failed', () => { events.push('failed'); });
 
     const queue = new TaskQueue(bus);
     const task = await queue.enqueue({ source: makeSource(), description: 'E2E fail' });

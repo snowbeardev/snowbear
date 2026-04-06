@@ -5,12 +5,15 @@
   "bin": {
     "snowbear": "./dist/main.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -b",
     "dev": "tsc -b --watch"
   },
   "dependencies": {
-    "@snowbear/core": "workspace:*"
+    "@snowbear/core": "workspace:*",
+    "commander": "^14.0.3"
   }
 }
