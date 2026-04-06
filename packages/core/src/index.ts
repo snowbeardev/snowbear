@@ -9,6 +9,7 @@ export { ToolRegistry } from './tool.js';
 export { TaskQueue } from './task-queue.js';
 export { OpenAiProvider, AnthropicProvider, createProvider } from './llm.js';
 export type {
+  AgentClassConstructor,
   AgentConfig,
   AgentLlmConfig,
   ServerConfig,

@@ -7,6 +7,11 @@ export interface AgentLlmConfig {
   maxTokens?: number;
 }
 
+export type AgentClassConstructor = new (
+  id: string,
+  ctx: import('./agent.js').AgentContext,
+) => import('./agent.js').Agent;
+
 export interface AgentConfig {
   id: string;
   name: string;
@@ -14,6 +19,7 @@ export interface AgentConfig {
   enabled?: boolean;
   systemPrompt?: string;
   llm?: AgentLlmConfig;
+  agentClass?: AgentClassConstructor;
   settings?: Record<string, unknown>;
 }
 

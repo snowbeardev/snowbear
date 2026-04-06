@@ -16,12 +16,13 @@ export OPENAI_API_KEY=sk-...
 3. Run the agent:
 
 ```bash
-npx tsx node_modules/.bin/snowbear start --config snowbear.config.ts
+npx snowbear start
 ```
 
 ## What it does
 
 - Responds to Slack messages and @mentions
-- Can create sub-tasks to break down complex requests
-- Can check the task queue status
+- Extends the `Agent` base class with custom `CeoAgent` implementation
+- Registers tools at startup via `onReady()`: `create_task` and `list_tasks`
+- Uses the task queue to delegate and track work
 - Uses GPT-4o-mini for responses
