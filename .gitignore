@@ -6,3 +6,6 @@ dist/
 !.env.example
 coverage/
 .DS_Store
+
+# Claude Code — track rules and CLAUDE.md, but keep local settings out
+.claude/settings.json
