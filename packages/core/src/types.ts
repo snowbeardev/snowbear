@@ -1,8 +1,19 @@
+export interface AgentLlmConfig {
+  provider: 'openai' | 'anthropic';
+  model: string;
+  apiKey?: string;
+  baseUrl?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
 export interface AgentConfig {
   id: string;
   name: string;
   adapter: string;
   enabled?: boolean;
+  systemPrompt?: string;
+  llm?: AgentLlmConfig;
   settings?: Record<string, unknown>;
 }
 
