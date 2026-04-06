@@ -46,6 +46,24 @@ export class TaskQueue {
     return task;
   }
 
+  async claim(taskId: string): Promise<Task> {
+    const task = this.getOrThrow(taskId);
+    this.assertStatus(task, 'pending');
+
+    this.pending = this.pending.filter((id) => id !== taskId);
+    task.status = 'running';
+    task.updatedAt = Date.now();
+
+    await this.eventBus.emit({
+      type: 'task:started',
+      source: 'task-queue',
+      payload: { task },
+      timestamp: task.updatedAt,
+    });
+
+    return task;
+  }
+
   async dequeue(): Promise<Task | undefined> {
     const taskId = this.pending.shift();
     if (!taskId) return undefined;

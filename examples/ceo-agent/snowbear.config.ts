@@ -1,4 +1,5 @@
 import type { ServerConfig } from '@snowbear/core';
+import { SlackAdapter } from '@snowbear/slack-adapter';
 import { CeoAgent } from './ceo-agent.js';
 
 const config: ServerConfig = {
@@ -21,6 +22,18 @@ const config: ServerConfig = {
       },
     },
   ],
+  adapters: {
+    slack: (taskQueue, eventBus) =>
+      new SlackAdapter(
+        {
+          botToken: process.env.SLACK_BOT_TOKEN!,
+          appToken: process.env.SLACK_APP_TOKEN!,
+          signingSecret: process.env.SLACK_SIGNING_SECRET,
+        },
+        taskQueue,
+        eventBus,
+      ),
+  },
 };
 
 export default config;

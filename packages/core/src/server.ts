@@ -1,15 +1,17 @@
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import type { FastifyInstance } from 'fastify';
-import type { ServerConfig } from './types.js';
+import type { ServerConfig, Adapter } from './types.js';
 import { EventBus } from './event-bus.js';
 import { AgentManager } from './agent-manager.js';
+import { TaskQueue } from './task-queue.js';
 import { loadConfig } from './config.js';
 
 export interface SnowbearServer {
   app: FastifyInstance;
   eventBus: EventBus;
   agentManager: AgentManager;
+  taskQueue: TaskQueue;
   start(): Promise<string>;
   stop(): Promise<void>;
 }
@@ -19,7 +21,9 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
     typeof configOrPath === 'string' ? await loadConfig(configOrPath) : configOrPath;
 
   const eventBus = new EventBus();
+  const taskQueue = new TaskQueue(eventBus);
   const agentManager = new AgentManager(eventBus);
+  const adapters: Adapter[] = [];
 
   const app = Fastify({ logger: true });
   await app.register(websocket);
@@ -77,13 +81,63 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
   // Load agent configs
   agentManager.load(config.agents);
 
+  // Build a map of adapter name → first matching agent id for message routing
+  const adapterToAgent = new Map<string, string>();
+  for (const agentCfg of config.agents) {
+    if (agentCfg.adapter && !adapterToAgent.has(agentCfg.adapter)) {
+      adapterToAgent.set(agentCfg.adapter, agentCfg.id);
+    }
+  }
+
+  // Wire message events to agent dispatch and task completion
+  eventBus.on('message', async (event) => {
+    const payload = event.payload as {
+      taskId: string;
+      text: string;
+      channel: string;
+      threadTs?: string;
+    };
+
+    const agentId = event.target ?? adapterToAgent.get(event.source);
+    if (!agentId) return;
+
+    try {
+      await taskQueue.claim(payload.taskId);
+      const result = await agentManager.dispatch(agentId, {
+        channel: payload.channel,
+        user: 'unknown',
+        text: payload.text,
+        threadId: payload.threadTs,
+      });
+      await taskQueue.complete(payload.taskId, result);
+    } catch (err) {
+      const task = taskQueue.getById(payload.taskId);
+      if (task && task.status === 'running') {
+        await taskQueue.fail(payload.taskId, err instanceof Error ? err.message : String(err));
+      }
+    }
+  });
+
+  // Create adapters from factories
+  if (config.adapters) {
+    for (const [name, factory] of Object.entries(config.adapters)) {
+      adapters.push(factory(taskQueue, eventBus));
+    }
+  }
+
   async function start(): Promise<string> {
     await agentManager.startAll();
+    for (const adapter of adapters) {
+      await adapter.start();
+    }
     const address = await app.listen({ host: config.host ?? '0.0.0.0', port: config.port ?? 3000 });
     return address;
   }
 
   async function stop(): Promise<void> {
+    for (const adapter of adapters) {
+      await adapter.stop();
+    }
     await agentManager.stopAll();
     eventBus.removeAll();
     await app.close();
@@ -99,5 +153,5 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
   process.on('SIGTERM', () => void shutdown());
   process.on('SIGINT', () => void shutdown());
 
-  return { app, eventBus, agentManager, start, stop };
+  return { app, eventBus, agentManager, taskQueue, start, stop };
 }

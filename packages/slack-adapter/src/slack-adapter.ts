@@ -1,5 +1,5 @@
 import { App } from '@slack/bolt';
-import type { EventBus, TaskQueue, EnqueueOptions, Task } from '@snowbear/core';
+import type { Adapter, EventBus, TaskQueue, EnqueueOptions, Task } from '@snowbear/core';
 
 export interface SlackAdapterConfig {
   botToken: string;
@@ -7,7 +7,7 @@ export interface SlackAdapterConfig {
   signingSecret?: string;
 }
 
-export class SlackAdapter {
+export class SlackAdapter implements Adapter {
   readonly name = 'slack';
   private app: App;
   private taskQueue: TaskQueue;

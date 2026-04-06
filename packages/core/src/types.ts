@@ -27,6 +27,7 @@ export interface ServerConfig {
   host?: string;
   port?: number;
   agents: AgentConfig[];
+  adapters?: Record<string, AdapterFactory>;
 }
 
 export interface EventMessage {
@@ -38,6 +39,17 @@ export interface EventMessage {
 }
 
 export type EventHandler = (message: EventMessage) => void | Promise<void>;
+
+export interface Adapter {
+  readonly name: string;
+  start(): Promise<void>;
+  stop(): Promise<void>;
+}
+
+export type AdapterFactory = (
+  taskQueue: import('./task-queue.js').TaskQueue,
+  eventBus: import('./event-bus.js').EventBus,
+) => Adapter;
 
 export type AgentStatus = 'stopped' | 'starting' | 'running' | 'stopping' | 'error';
 

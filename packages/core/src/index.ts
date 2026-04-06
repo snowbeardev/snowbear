@@ -15,6 +15,8 @@ export type {
   ServerConfig,
   EventMessage,
   EventHandler,
+  Adapter,
+  AdapterFactory,
   AgentStatus,
   Task,
   TaskStatus,
