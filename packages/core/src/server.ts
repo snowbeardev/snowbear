@@ -1,7 +1,11 @@
+import { existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
+import fastifyStatic from '@fastify/static';
 import type { FastifyInstance } from 'fastify';
-import type { ServerConfig, Adapter } from './types.js';
+import type { ServerConfig, Adapter, TaskStatus } from './types.js';
 import { EventBus } from './event-bus.js';
 import { AgentManager } from './agent-manager.js';
 import { TaskQueue } from './task-queue.js';
@@ -14,6 +18,18 @@ export interface SnowbearServer {
   taskQueue: TaskQueue;
   start(): Promise<string>;
   stop(): Promise<void>;
+}
+
+function resolveUiDist(): string | undefined {
+  try {
+    // Try to resolve @snowbear/ui's dist directory relative to this package
+    const thisDir = dirname(fileURLToPath(import.meta.url));
+    const candidate = resolve(thisDir, '../../ui/dist');
+    if (existsSync(candidate)) return candidate;
+  } catch {
+    // not available
+  }
+  return undefined;
 }
 
 export async function createServer(configOrPath: ServerConfig | string): Promise<SnowbearServer> {
@@ -35,6 +51,110 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
       agents[id] = instance.status;
     }
     return { status: 'ok', agents };
+  });
+
+  // ── REST API routes for dashboard ──
+
+  // List all agents
+  app.get('/api/agents', async () => {
+    const result: Record<string, unknown>[] = [];
+    for (const [id, instance] of agentManager.getAll()) {
+      result.push({
+        id,
+        name: instance.config.name,
+        adapter: instance.config.adapter,
+        status: instance.status,
+        enabled: instance.config.enabled !== false,
+        systemPrompt: instance.config.systemPrompt,
+        llm: instance.config.llm
+          ? { provider: instance.config.llm.provider, model: instance.config.llm.model }
+          : null,
+      });
+    }
+    return result;
+  });
+
+  // Get single agent
+  app.get<{ Params: { id: string } }>('/api/agents/:id', async (request, reply) => {
+    const all = agentManager.getAll();
+    const instance = all.get(request.params.id);
+    if (!instance) {
+      return reply.code(404).send({ error: 'Agent not found' });
+    }
+    return {
+      id: request.params.id,
+      name: instance.config.name,
+      adapter: instance.config.adapter,
+      status: instance.status,
+      enabled: instance.config.enabled !== false,
+      systemPrompt: instance.config.systemPrompt,
+      llm: instance.config.llm
+        ? { provider: instance.config.llm.provider, model: instance.config.llm.model }
+        : null,
+    };
+  });
+
+  // Start/stop agent
+  app.post<{ Params: { id: string }; Body: { action: string } }>(
+    '/api/agents/:id',
+    async (request, reply) => {
+      const { action } = request.body ?? {};
+      try {
+        if (action === 'start') {
+          await agentManager.start(request.params.id);
+        } else if (action === 'stop') {
+          await agentManager.stop(request.params.id);
+        } else if (action === 'restart') {
+          await agentManager.restart(request.params.id);
+        } else {
+          return reply.code(400).send({ error: 'Invalid action. Use start, stop, or restart.' });
+        }
+        return { ok: true, status: agentManager.getStatus(request.params.id) };
+      } catch (err) {
+        return reply.code(400).send({ error: err instanceof Error ? err.message : String(err) });
+      }
+    },
+  );
+
+  // List tasks (with optional status filter)
+  app.get<{ Querystring: { status?: string } }>('/api/tasks', async (request) => {
+    let tasks = taskQueue.listAll();
+    if (request.query.status) {
+      const statuses = request.query.status.split(',') as TaskStatus[];
+      tasks = tasks.filter((t) => statuses.includes(t.status));
+    }
+    tasks.sort((a, b) => b.createdAt - a.createdAt);
+    return tasks;
+  });
+
+  // Get single task with subtasks
+  app.get<{ Params: { id: string } }>('/api/tasks/:id', async (request, reply) => {
+    const task = taskQueue.getById(request.params.id);
+    if (!task) {
+      return reply.code(404).send({ error: 'Task not found' });
+    }
+    return { ...task, subtasks: taskQueue.getChildren(task.id) };
+  });
+
+  // Stats overview
+  app.get('/api/stats', async () => {
+    const tasks = taskQueue.listAll();
+    const agents: Record<string, string> = {};
+    for (const [id, instance] of agentManager.getAll()) {
+      agents[id] = instance.status;
+    }
+    const agentCount = Object.keys(agents).length;
+    const runningAgents = Object.values(agents).filter((s) => s === 'running').length;
+    return {
+      agents: { total: agentCount, running: runningAgents },
+      tasks: {
+        total: tasks.length,
+        pending: tasks.filter((t) => t.status === 'pending').length,
+        running: tasks.filter((t) => t.status === 'running').length,
+        done: tasks.filter((t) => t.status === 'done').length,
+        failed: tasks.filter((t) => t.status === 'failed').length,
+      },
+    };
   });
 
   // WebSocket endpoint for event streaming
@@ -77,6 +197,20 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
       eventBus.off('message', handler);
     });
   });
+
+  // Serve dashboard static files if the @snowbear/ui build output exists
+  const uiDistDir = config.uiDir ?? resolveUiDist();
+  if (uiDistDir && existsSync(uiDistDir)) {
+    await app.register(fastifyStatic, {
+      root: uiDistDir,
+      prefix: '/',
+      wildcard: false,
+    });
+    // SPA fallback: serve index.html for non-API/WS routes
+    app.setNotFoundHandler((_request, reply) => {
+      return reply.sendFile('index.html');
+    });
+  }
 
   // Load agent configs
   agentManager.load(config.agents);

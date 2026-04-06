@@ -20,7 +20,8 @@
   "references": [
     { "path": "packages/core" },
     { "path": "packages/cli" },
-    { "path": "packages/slack-adapter" }
+    { "path": "packages/slack-adapter" },
+    { "path": "packages/ui" }
   ],
   "files": []
 }

@@ -140,6 +140,10 @@ export class TaskQueue {
     return this.tasks.size;
   }
 
+  listAll(): Task[] {
+    return Array.from(this.tasks.values());
+  }
+
   private getOrThrow(taskId: string): Task {
     const task = this.tasks.get(taskId);
     if (!task) {

@@ -28,6 +28,8 @@ export interface ServerConfig {
   port?: number;
   agents: AgentConfig[];
   adapters?: Record<string, AdapterFactory>;
+  /** Path to the built @snowbear/ui dist directory. Auto-detected if omitted. */
+  uiDir?: string;
 }
 
 export interface EventMessage {

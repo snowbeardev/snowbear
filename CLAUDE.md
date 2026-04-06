@@ -8,9 +8,10 @@ Monorepo managed with **pnpm workspaces** and **TypeScript project references**.
 
 ```
 packages/
-  core/           @snowbear/core — runtime, agent lifecycle, event bus, tool system, task queue, LLM providers
+  core/           @snowbear/core — runtime, agent lifecycle, event bus, tool system, task queue, REST API, LLM providers
   cli/            @snowbear/cli — CLI for running/managing agents (commander-based)
   slack-adapter/  @snowbear/slack-adapter — Slack Bolt integration
+  ui/             @snowbear/ui — Web dashboard (React + Vite + Tailwind CSS)
 examples/
   ceo-agent/      Example agent using all packages
 ```
@@ -34,7 +35,8 @@ pnpm format:check     # Prettier (check only)
 - **Package manager:** pnpm 9.x with workspace protocol
 - **Build:** `tsc -b` (project references)
 - **Test:** Vitest — test files colocated as `*.test.ts` in `src/`
-- **Server:** Fastify with `@fastify/websocket`
+- **Server:** Fastify with `@fastify/websocket` and `@fastify/static`
+- **Dashboard:** React 19, React Router, TanStack Query, Tailwind CSS, Vite
 - **LLM:** OpenAI and Anthropic providers (see `packages/core/src/llm.ts`)
 - **Slack:** `@slack/bolt`
 - **CI:** GitHub Actions on Node 20 + 22
