@@ -34,3 +34,22 @@ export interface EventMessage {
 export type EventHandler = (message: EventMessage) => void | Promise<void>;
 
 export type AgentStatus = 'stopped' | 'starting' | 'running' | 'stopping' | 'error';
+
+export type TaskStatus = 'pending' | 'running' | 'done' | 'failed';
+
+export interface TaskSource {
+  channel: string;
+  threadId?: string;
+}
+
+export interface Task {
+  id: string;
+  source: TaskSource;
+  description: string;
+  status: TaskStatus;
+  result?: unknown;
+  error?: string;
+  parentTaskId?: string;
+  createdAt: number;
+  updatedAt: number;
+}

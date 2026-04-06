@@ -6,6 +6,7 @@ export { createServer } from './server.js';
 export { loadConfig } from './config.js';
 export { Agent } from './agent.js';
 export { ToolRegistry } from './tool.js';
+export { TaskQueue } from './task-queue.js';
 export { OpenAiProvider, AnthropicProvider, createProvider } from './llm.js';
 export type {
   AgentConfig,
@@ -14,7 +15,11 @@ export type {
   EventMessage,
   EventHandler,
   AgentStatus,
+  Task,
+  TaskStatus,
+  TaskSource,
 } from './types.js';
+export type { EnqueueOptions } from './task-queue.js';
 export type { AgentInstance } from './agent-manager.js';
 export type { SnowbearServer } from './server.js';
 export type { AgentPersonality, AgentContext, IncomingMessage } from './agent.js';
