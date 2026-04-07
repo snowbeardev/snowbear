@@ -63,9 +63,11 @@ export abstract class Agent {
     let currentResponse = response;
 
     while (currentResponse.toolCalls.length > 0) {
-      if (currentResponse.content) {
-        currentMessages.push({ role: 'assistant', content: currentResponse.content });
-      }
+      currentMessages.push({
+        role: 'assistant',
+        content: currentResponse.content ?? '',
+        toolCalls: currentResponse.toolCalls,
+      });
 
       for (const call of currentResponse.toolCalls) {
         const result = await this.ctx.tools.execute(call.name, call.arguments);

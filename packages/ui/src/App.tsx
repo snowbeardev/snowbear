@@ -7,6 +7,7 @@ import { AgentsPage } from './pages/AgentsPage.js';
 import { AgentDetailPage } from './pages/AgentDetailPage.js';
 import { TasksPage } from './pages/TasksPage.js';
 import { TaskDetailPage } from './pages/TaskDetailPage.js';
+import { ChatPage } from './pages/ChatPage.js';
 import { connectWebSocket } from './lib/ws.js';
 
 const queryClient = new QueryClient({
@@ -30,6 +31,7 @@ export function App() {
               <Route path="agents/:id" element={<AgentDetailPage />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="tasks/:id" element={<TaskDetailPage />} />
+              <Route path="chat" element={<ChatPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

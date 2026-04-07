@@ -16,8 +16,11 @@
     "dev": "tsc -b --watch"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.0",
+    "@ai-sdk/openai": "^1.0.0",
     "@fastify/static": "^9.0.0",
     "@fastify/websocket": "^11.2.0",
+    "ai": "^4.0.0",
     "fastify": "^5.8.4",
     "js-yaml": "^4.1.1"
   },

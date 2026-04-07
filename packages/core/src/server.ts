@@ -4,6 +4,10 @@ import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import fastifyStatic from '@fastify/static';
+import { streamText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import type { CoreMessage } from 'ai';
 import type { FastifyInstance } from 'fastify';
 import type { ServerConfig, Adapter, TaskStatus } from './types.js';
 import { EventBus } from './event-bus.js';
@@ -156,6 +160,58 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
       },
     };
   });
+
+  // Chat endpoint — streams AI responses using Vercel AI SDK data-stream protocol
+  app.post<{ Body: { messages: CoreMessage[]; agentId?: string } }>(
+    '/api/chat',
+    async (request, reply) => {
+      const { messages, agentId } = request.body ?? {};
+      if (!Array.isArray(messages)) {
+        return reply.code(400).send({ error: 'messages must be an array' });
+      }
+
+      // Resolve target agent
+      const all = agentManager.getAll();
+      let targetId = agentId;
+      if (!targetId) {
+        const first = all.keys().next();
+        if (first.done) return reply.code(400).send({ error: 'No agents available' });
+        targetId = first.value;
+      }
+      const instance = all.get(targetId);
+      if (!instance) return reply.code(404).send({ error: 'Agent not found' });
+
+      const llmConfig = instance.config.llm;
+      if (!llmConfig?.apiKey) {
+        return reply.code(400).send({ error: 'Agent has no LLM config with an API key' });
+      }
+
+      let model;
+      if (llmConfig.provider === 'openai') {
+        const provider = createOpenAI({
+          apiKey: llmConfig.apiKey,
+          ...(llmConfig.baseUrl ? { baseURL: llmConfig.baseUrl } : {}),
+        });
+        model = provider(llmConfig.model);
+      } else if (llmConfig.provider === 'anthropic') {
+        const provider = createAnthropic({
+          apiKey: llmConfig.apiKey,
+          ...(llmConfig.baseUrl ? { baseURL: llmConfig.baseUrl } : {}),
+        });
+        model = provider(llmConfig.model);
+      } else {
+        return reply.code(400).send({ error: `Unsupported LLM provider: ${llmConfig.provider}` });
+      }
+
+      const result = streamText({
+        model,
+        ...(instance.config.systemPrompt ? { system: instance.config.systemPrompt } : {}),
+        messages,
+      });
+
+      result.pipeDataStreamToResponse(reply.raw);
+    },
+  );
 
   // WebSocket endpoint for event streaming
   app.get('/ws', { websocket: true }, (socket) => {

@@ -4,6 +4,7 @@ const navItems = [
   { to: '/', label: 'Dashboard' },
   { to: '/agents', label: 'Agents' },
   { to: '/tasks', label: 'Tasks' },
+  { to: '/chat', label: 'Chat' },
 ];
 
 export function Layout() {
