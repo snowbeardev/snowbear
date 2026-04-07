@@ -182,20 +182,29 @@ export async function createServer(configOrPath: ServerConfig | string): Promise
       if (!instance) return reply.code(404).send({ error: 'Agent not found' });
 
       const llmConfig = instance.config.llm;
-      if (!llmConfig?.apiKey) {
-        return reply.code(400).send({ error: 'Agent has no LLM config with an API key' });
+      if (!llmConfig) {
+        return reply.code(400).send({ error: 'Agent has no LLM config' });
+      }
+
+      // Resolve API key: explicit config first, then environment variable fallback
+      const envKeyName = llmConfig.provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+      const apiKey = llmConfig.apiKey ?? process.env[envKeyName];
+      if (!apiKey) {
+        return reply
+          .code(400)
+          .send({ error: `Agent has no API key. Set ${envKeyName} or apiKey in llm config.` });
       }
 
       let model;
       if (llmConfig.provider === 'openai') {
         const provider = createOpenAI({
-          apiKey: llmConfig.apiKey,
+          apiKey,
           ...(llmConfig.baseUrl ? { baseURL: llmConfig.baseUrl } : {}),
         });
         model = provider(llmConfig.model);
       } else if (llmConfig.provider === 'anthropic') {
         const provider = createAnthropic({
-          apiKey: llmConfig.apiKey,
+          apiKey,
           ...(llmConfig.baseUrl ? { baseURL: llmConfig.baseUrl } : {}),
         });
         model = provider(llmConfig.model);
